@@ -45,68 +45,58 @@ var ponceletOrbitOn;
 var linesOn;
 var curvesOn;
 var beziersOn;
+var bezier0On, bezier1On, bezier2On, bezier3On, bezier4On, bezier5On;
 
 export function setup(audioData, sendData) {
-  createCanvas(1000, 1000);
+  createCanvas(600, 600);
 
-	scaleX = 200;
-	scaleY = 200;
-	sW1 = 2/scaleX;
-	sW2 = 0.5/scaleX;
+  scaleX = 200;
+  scaleY = 200;
+  sW1 = 2/scaleX;
+  sW2 = 0.5/scaleX;
 
-	// pVal = 0.4;
-	// qVal = 0.2;
-	// wVal = 0.5;
-	// hVal = 0.25;
-	// tVal = PI/6.0;
+  // pVal = 0.4;
+  // qVal = 0.2;
+  // wVal = 0.5;
+  // hVal = 0.25;
+  // tVal = PI/6.0;
 
-	// pentagon p=q=t=0, w=h=cos(PI/5)
-	pVal = 0.35;
-	qVal = 0.45;
-	wVal = 0.2; //cos(PI/5.0); // 0.2;
-	hVal = 0.2; //cos(PI/5.0); // 0.2;
-	tVal = 0.0; 
+  // pentagon p=q=t=0, w=h=cos(PI/5)
+  pVal = 0.35;
+  qVal = 0.45;
+  wVal = 0.2; //cos(PI/5.0); // 0.2;
+  hVal = 0.2; //cos(PI/5.0); // 0.2;
+  tVal = 0.0; 
 
-	movableEllipse = new MovableEllipse(pVal,qVal,wVal,hVal,tVal);
+  movableEllipse = new MovableEllipse(pVal,qVal,wVal,hVal,tVal);
 
-	xInitial = cos(3*PI/6.0);
-	yInitial = sin(3*PI/6.0);
+  xInitial = cos(3*PI/6.0);
+  yInitial = sin(3*PI/6.0);
 
-	nVal = 100;
+  nVal = 200;
 
-	unitCircleOn = true;
-	ellipseOn = true;
-	squareOn = false;
-	ponceletOrbitOn = false;
-	linesOn = false;
-	curvesOn = false;
-	beziersOn = true;  
+  unitCircleOn = true;
+  ellipseOn = true;
+  squareOn = false;
+  ponceletOrbitOn = false;
+  linesOn = false;
+  curvesOn = false;
+  beziersOn = true;
+  bezier0On = false;
+  bezier1On = false;
+  bezier2On = true;
+  bezier3On = false;
+  bezier4On = false; 
+  bezier5On = false; 
 
-	ponceletOrbit = computeOrbit(
-		xInitial, 
-		yInitial, 
-		movableEllipse.getp(), 
-		movableEllipse.getq(), 
-		movableEllipse.getw(), 
-		movableEllipse.geth(), 
-		movableEllipse.gett(), 
-		nVal
-	);
+  ponceletOrbit = computeOrbit(xInitial, yInitial, movableEllipse.getp(), movableEllipse.getq(), movableEllipse.getw(), movableEllipse.geth(), movableEllipse.gett(), nVal);
+  ponceletInnerOrbit = computeInnerOrbit(ponceletOrbit, movableEllipse.getp(), movableEllipse.getq(), movableEllipse.getw(), movableEllipse.geth(), movableEllipse.gett(), nVal);
 
-	ponceletInnerOrbit = computeInnerOrbit(
-		ponceletOrbit, 
-		movableEllipse.getp(), 
-		movableEllipse.getq(), 
-		movableEllipse.getw(), 
-		movableEllipse.geth(), 
-		movableEllipse.gett(), 
-		nVal
-	);
+  angularDurations = computeAngularDurations(ponceletOrbit);
+  euclideanDurations = computeEuclideanDurations(ponceletOrbit);
+  innerAngularDurations = computeAngularDurations(ponceletInnerOrbit);
+  innerEuclideanDurations = computeEuclideanDurations(ponceletInnerOrbit);
 
-	angularDurations = computeAngularDurations(ponceletOrbit);
-	euclideanDurations = computeEuclideanDurations(ponceletOrbit);
-	innerAngularDurations = computeAngularDurations(ponceletInnerOrbit);
-	innerEuclideanDurations = computeEuclideanDurations(ponceletInnerOrbit);
 
   if (dataExport) {
   	saveJSON(ponceletOrbit, 'orbitData.json');
@@ -115,39 +105,32 @@ export function setup(audioData, sendData) {
   }
 
   squareIntersections = computeSquareIntersections(ponceletOrbit);
-
 	sendData({
-		pVal: movableEllipse.getp(), 
-		qVal: movableEllipse.getq(), 
-		wVal: movableEllipse.getw(), 
-		hVal: movableEllipse.geth(), 
-		tVal: movableEllipse.gett(), 
+		pVal,
+		qVal,
 		ponceletOrbit,
 		ponceletInnerOrbit,
-		angularDurations,
+		angularDurations ,
 		euclideanDurations,
 		innerAngularDurations,
-		innerEuclideanDurations
+		innerEuclideanDurations,
 	})
 
-	movableEllipse.onStopDragging(() => {
+	movableEllipse.onStopDragging(({ pVal, qVal }) => {
 		sendData({
-			pVal: movableEllipse.getp(), 
-			qVal: movableEllipse.getq(), 
-			wVal: movableEllipse.getw(), 
-			hVal: movableEllipse.geth(), 
-			tVal: movableEllipse.gett(), 
+			pVal,
+			qVal,
 			ponceletOrbit,
 			ponceletInnerOrbit,
-			angularDurations,
+			angularDurations ,
 			euclideanDurations,
 			innerAngularDurations,
-			innerEuclideanDurations
+			innerEuclideanDurations,
 		})
 	})
 }
 
-export function draw(audioData, sendData) {
+export function draw(audioData) {
 	background(255);
   
 	scale(scaleX,-scaleY);
@@ -179,11 +162,25 @@ export function draw(audioData, sendData) {
 		drawSquareIntersectionsCurve(squareIntersections);
 	}
 
-	if (beziersOn) {		
-		// drawSquareIntersectionsBezier(squareIntersections);
-		// drawBezierFlower1(ponceletOrbit,ponceletInnerOrbit);
-		drawBezierFlower2(ponceletOrbit,ponceletInnerOrbit);
-		// drawBezierFlower3(ponceletOrbit,ponceletInnerOrbit);
+	if (beziersOn) {
+		if (bezier0On) {		
+			drawSquareIntersectionsBezier(squareIntersections);
+		}
+		if (bezier1On) {
+			drawBezierFlower1(ponceletOrbit,ponceletInnerOrbit);
+		}
+		if (bezier2On) {
+			drawBezierFlower2(ponceletOrbit,ponceletInnerOrbit);
+		}
+		if (bezier3On) {
+			drawBezierFlower3(ponceletOrbit,ponceletInnerOrbit);
+		}
+		if (bezier4On) {
+			drawBezierFlower4(ponceletOrbit,ponceletInnerOrbit);
+		}
+		if (bezier5On) {
+			drawBezierFlower5(ponceletOrbit,ponceletInnerOrbit);
+		}		
 	}
 
 }
@@ -251,12 +248,12 @@ class MovableEllipse {
 
   stopDragging() {
   	this.dragging = false;
-		this.onStopDragging()
+		this._onStopDragging({ qVal: this.q, pVal: this.p })
   }   
 
-  onStopDragging(callback){
-    if(callback) callback()
-  }
+	onStopDragging(cb) {
+		this._onStopDragging = cb
+ 	}
 
   getp() {
   	return this.p;
@@ -523,13 +520,17 @@ function drawBezierFlower2(orbit, innerOrbit) {
 	let orbitLength = orbit.length;
 	let innerOrbitLength = innerOrbit.length;
 	let cp0, cp1, cp2, cp3;
-	let tgntControlPoints = [];
+	// let tgntControlPoints = [];
+	let tgntControlPoints0 = [];
+	let tgntControlPoints1 = [];
 
 	if (innerOrbitLength>0) {
 		push();
 			stroke(0,0,0);
 			strokeWeight(sW2);
 			beginShape();
+				// fill(0,0,255,100);
+				noFill();
 				for (let i=0; i<innerOrbitLength; i++) {
 					cp0 = orbit[i];
 					cp3 = orbit[i+1];
@@ -538,10 +539,15 @@ function drawBezierFlower2(orbit, innerOrbit) {
 					cp1 = tgntControlPoints0[1];
 					cp2 = tgntControlPoints1[0];					
 										
-					noFill();
-					// fill(255,0,0,20);
 					bezier(cp0[0],cp0[1],cp1[0],cp1[1],cp2[0],cp2[1],cp3[0],cp3[1]);
 				}
+				// cp0 = orbit[orbitLength-1];
+				// cp3 = orbit[0];
+				// tgntControlPoints0 = tangentControlPoints(cp0[0],cp0[1],0.25);
+				// tgntControlPoints1 = tangentControlPoints(cp3[0],cp3[1],0.25);
+				// cp1 = tgntControlPoints0[1];
+				// cp2 = tgntControlPoints1[0];		
+				// bezier(cp0[0],cp0[1],cp1[0],cp1[1],cp2[0],cp2[1],cp3[0],cp3[1]);
 			endShape(); 
 		pop();
 	}
@@ -550,8 +556,11 @@ function drawBezierFlower2(orbit, innerOrbit) {
 function drawBezierFlower3(orbit, innerOrbit) {
 	let orbitLength = orbit.length;
 	let innerOrbitLength = innerOrbit.length;
-	let cp0, cp1, cp2, cp3;
-	let tgntControlPoints = [];
+	let p0, p1;
+	let cp0, cp1, cp2, cp3, cp4, cp5, cp6, cp7;
+	let tgntControlPointsOuterPre = [];
+	let tgntControlPointsOuterPost = [];
+	let tgntControlPointsInnerBack = [];
 
 	if (innerOrbitLength>0) {
 		push();
@@ -559,15 +568,110 @@ function drawBezierFlower3(orbit, innerOrbit) {
 			strokeWeight(sW2);
 			beginShape();
 				for (let i=0; i<innerOrbitLength; i++) {
-					cp0 = orbit[i];
-					cp3 = orbit[i+1];
-					tgntControlPoints0 = tangentControlPoints(cp0[0],cp0[1],0.5);
-					tgntControlPoints1 = tangentControlPoints(cp3[0],cp3[1],0.5);
-					cp1 = tgntControlPoints0[1];
-					cp2 = tgntControlPoints1[0];					
+					p0 = orbit[i];
+					p1 = orbit[i+1];
+					cp0 = p0;
+					cp7 = p1;
+					cp3 = innerOrbit[i];
+					cp4 = innerOrbit[i];
+					tgntControlPointsOuterPre = tangentControlPoints(p0[0],p0[1],0.5);
+					tgntControlPointsOuterPost = tangentControlPoints(p1[0],p1[1],0.5);
+					tgntControlPointsInner = tangentControlPointsInner(innerOrbit[i][0],innerOrbit[i][1],p0[0],p0[1],p1[0],p1[1],0.25);
+					cp1 = tgntControlPointsOuterPre[1];
+					cp6 = tgntControlPointsOuterPost[0];
+					cp2 = tgntControlPointsInner[0];
+					cp5 = tgntControlPointsInner[1];				
 										
 					noFill();
 					bezier(cp0[0],cp0[1],cp1[0],cp1[1],cp2[0],cp2[1],cp3[0],cp3[1]);
+					bezier(cp4[0],cp4[1],cp5[0],cp5[1],cp6[0],cp6[1],cp7[0],cp7[1]);								
+				}
+			endShape(); 
+		pop();
+	}
+}
+
+function drawBezierFlower4(orbit, innerOrbit) {
+	let orbitLength = orbit.length;
+	let innerOrbitLength = innerOrbit.length;
+	let p0, p1;
+	let cp0, cp1, cp2, cp3, cp4, cp5, cp6, cp7;
+	let tgntControlPointsOuterPre = [];
+	let tgntControlPointsOuterPost = [];
+	let tgntControlPointsInnerBack = [];
+
+	if (innerOrbitLength>0) {
+		push();
+			stroke(0,0,0);
+			strokeWeight(sW2);
+			beginShape();
+				for (let i=0; i<innerOrbitLength; i++) {
+					p0 = orbit[i];
+					p1 = orbit[i+1];
+					cp0 = p0;
+					cp7 = p1;
+					cp3 = innerOrbit[i];
+					cp4 = innerOrbit[i];
+					tgntControlPointsOuterPre = tangentControlPoints(p0[0],p0[1],1.0);
+					tgntControlPointsOuterPost = tangentControlPoints(p1[0],p1[1],1.0);
+					tgntControlPointsInner = tangentControlPointsInner(innerOrbit[i][0],innerOrbit[i][1],p0[0],p0[1],p1[0],p1[1],0.5);
+					cp1 = tgntControlPointsOuterPre[1]; // Note this (Pre and Post swapped)!
+					cp6 = tgntControlPointsOuterPost[0]; // Note this (Pre and Post swapped)!
+					cp2 = tgntControlPointsInner[1];
+					cp5 = tgntControlPointsInner[0];				
+										
+					noFill();
+					bezier(cp0[0],cp0[1],cp1[0],cp1[1],cp2[0],cp2[1],cp3[0],cp3[1]);
+					bezier(cp4[0],cp4[1],cp5[0],cp5[1],cp6[0],cp6[1],cp7[0],cp7[1]);
+				}
+			endShape(); 
+		pop();
+	}
+}
+
+function drawBezierFlower5(orbit, innerOrbit) {
+	let orbitLength = orbit.length;
+	let innerOrbitLength = innerOrbit.length;
+	let p0, p1;
+	let cp0, cp1, cp2, cp3, cp4, cp5, cp6, cp7;
+	let tgntControlPointsOuterPre = [];
+	let tgntControlPointsOuterPost = [];
+	let tgntControlPointsInnerBack = [];
+
+	if (innerOrbitLength>0) {
+		push();
+			stroke(0,0,0);
+			strokeWeight(sW2);
+			beginShape();
+				for (let i=0; i<innerOrbitLength; i++) {
+					p0 = orbit[i];
+					p1 = orbit[i+1];
+						cp3 = innerOrbit[i];
+						cp4 = innerOrbit[i];					
+						tgntControlPointsOuterPre = tangentControlPoints(p0[0],p0[1],0.25);
+						tgntControlPointsOuterPost = tangentControlPoints(p1[0],p1[1],0.25);
+						tgntControlPointsInner = tangentControlPointsInner(innerOrbit[i][0],innerOrbit[i][1],p0[0],p0[1],p1[0],p1[1],0.25);
+						cp2 = tgntControlPointsInner[0];
+						cp5 = tgntControlPointsInner[1];
+					if (i%2==0) {
+						cp0 = p0;
+						cp6 = p1;
+						cp1 = tgntControlPointsOuterPre[1];
+						cp7 = tgntControlPointsOuterPost[0];
+					} else {
+						cp0 = tgntControlPointsOuterPre[0];
+						cp1 = p0;
+						cp6 = tgntControlPointsOuterPost[1];
+						cp7 = p1;
+					}
+					
+					
+					
+									
+										
+					noFill();
+					bezier(cp0[0],cp0[1],cp1[0],cp1[1],cp2[0],cp2[1],cp3[0],cp3[1]);
+					bezier(cp4[0],cp4[1],cp5[0],cp5[1],cp6[0],cp6[1],cp7[0],cp7[1]);
 				}
 			endShape(); 
 		pop();
@@ -706,7 +810,7 @@ function ellipseInsideCircle(p, q, w, h) {
 	}
 }
 
-// Returns the clockwise and anticlockwise control tangential control
+// Returns the clockwise and anticlockwise tangential control
 // points - in that order - for iterates on the unit circle
 function tangentControlPoints(x, y, s) {
 	let controlPoint = [];
@@ -723,33 +827,71 @@ function tangentControlPoints(x, y, s) {
 	return controlPoints;
 }
 
-function mousePressed() {
+// Returns the tangential control points - in that order - for 
+// iterates on the inner ellipse.
+// These can be 'back' and 'font' depening on the choice of
+// circle iterate (c0,c1).
+function tangentControlPointsInner(e0, e1, c00, c01, c10, c11, s) {
+	let controlPoint = [];
+	let controlPoints = [];
+
+	// 'back'
+	controlPoints[0] = [];
+	controlPoints[0][0] = e0+s*(c00-e0)/sqrt(pow(c00-e0,2)+pow(c01-e1,2));
+	controlPoints[0][1] = e1+s*(c01-e1)/sqrt(pow(c00-e0,2)+pow(c01-e1,2));
+
+	// 'front'
+	controlPoints[1] = [];
+	controlPoints[1][0] = e0+s*(c10-e0)/sqrt(pow(c10-e0,2)+pow(c11-e1,2));
+	controlPoints[1][1] = e1+s*(c11-e1)/sqrt(pow(c10-e0,2)+pow(c11-e1,2));
+
+	return controlPoints;
+}
+
+export function mousePressed() {
 	movableEllipse.clicked(mouseX,mouseY);
 }
 
-function mouseReleased() {
+export function mouseReleased() {
 	movableEllipse.stopDragging();
 }
 
-function keyPressed() {
+export function keyPressed() {
 	if (key == 'l') {
-		linesOn = !linesOn;
-		// curvesOn = false;
-		// beziersOn = false;		
+		linesOn = !linesOn;		
 	}
 
 	if (key == 'c') {
 		curvesOn = !curvesOn;
-		// linesOn = false;
-		// beziersOn = false;
-
 	}
 
 	if (key == 'b') {
 		beziersOn = !beziersOn;
-		// linesOn = false;
-		// curvesOn = false;
 	}
+
+	if (key == '0') {
+		bezier0On = !bezier0On;
+	}
+
+	if (key == '1') {
+		bezier1On = !bezier1On;
+	}	
+
+	if (key == '2') {
+		bezier2On = !bezier2On;
+	}	
+
+	if (key == '3') {
+		bezier3On = !bezier3On;
+	}	
+
+	if (key == '4') {
+		bezier4On = !bezier4On;
+	}	
+
+	if (key == '5') {
+		bezier5On = !bezier5On;
+	}						
 
 	if (key == 'u') {
 		unitCircleOn = !unitCircleOn;

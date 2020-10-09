@@ -32,7 +32,7 @@ let fft;
 export function setup(ponceletData, sendData) {
 	if(ponceletData) data = ponceletData 
 
-	const btn = createButton('play/pause').size(96, 40);
+	const btn = createButton('&#9658;/ ||').size(56, 40);
 	setupPoly()
 	setupNoise()
 	setupMelody()

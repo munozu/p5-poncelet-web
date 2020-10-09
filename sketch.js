@@ -13,7 +13,7 @@ export function draw() {
 	poncelet.draw(audioData)
 	audio.draw(setAudioData)
 	if(frameCount % 100 === 0) {
-		console.log(audioData)
+		// console.log(audioData)
 	}
 }
 
@@ -22,5 +22,8 @@ function setAudioData(new_data) {
 }
 
 function setPonceletData(new_data) {
+	console.log(new_data)
 	ponceletData = new_data;
 }
+
+export { mousePressed, mouseReleased, keyPressed } from './poncelet.js'
