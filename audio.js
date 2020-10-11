@@ -1,6 +1,7 @@
 import {CHROMATIC_SCALE, SCALE, noteValue, noteString, buildChord} from './musicUtil.js';
 
 const BPM = 120 
+const VOL = 0.5
 
 const COF = ['a', 'd', 'g', 'c', 'f', 'a#', 'd#', 'g#', 'c#', 'f#', 'b', 'e']
 
@@ -31,7 +32,7 @@ let fft;
 
 export function setup(ponceletData, sendData) {
 	if(ponceletData) data = ponceletData 
-
+	console.log(data)
 	const btn = createButton('&#9658;/ ||').size(56, 40);
 	setupPoly()
 	setupNoise()
@@ -54,7 +55,11 @@ function setupComp() {
 	comp.drywet(0.5)
 }
 
-export function draw(sendData) {
+let prev_coords = {}
+export function draw(ponceletData, sendData) {
+	if(ponceletData && frameCount % 10 === 0){
+		data = ponceletData
+	} 
 	sendData({
 		fft,
 		spectrum: fft.analyze(),
@@ -102,7 +107,7 @@ function playPoly(time, [x,y]) {
 	chord.forEach((n, i) => {
 		poly_chord.play(n, 0.01, time + (i * 0.017), 1)
 	})
-	if(Math.random() < 0.5) poly_chord.play(chord.pop() * 2, 0.02, time += 1/16, 0.2)
+	if(Math.random() < 0.5) poly_chord.play(chord.pop() * 2, 0.05, time += 1/16, 0.2)
 	primary_chord = chord
 	poly_step = (poly_step+1) % 16
 }
@@ -117,7 +122,7 @@ function setupNoise() {
 
 	nz_env = new p5.Env();
 	nz_env.setADSR(0.001,0.01);
-	nz_env.setRange(0.02, 0)
+	nz_env.setRange(0.05, 0)
 
 	nz_flt_env = new p5.Env();
 
@@ -169,13 +174,14 @@ function setupMelody() {
 
 function playMelody(time) {
 	if(!primary_note) return
-	mel_delay.delayTime(0.4)
-	mel_delay.feedback(0.5)
+
+	mel_delay.delayTime(0.4 * data.pVal)
+	mel_delay.feedback(0.5 * data.qVal)
 
 	if(mel_step % 8 < 4) {
-		melody.play(primary_chord[mel_step % 3], 0.01, time, 0.1)
+		melody.play(primary_chord[mel_step % 3], 0.02, time, 0.1)
 	} else {
-		melody.play(primary_chord[mel_step % 3] * 2, 0.01, time, 0.1)
+		melody.play(primary_chord[mel_step % 3] * 2, 0.02, time, 0.1)
 	} 
 
 	mel_step = (mel_step+1) % 16 

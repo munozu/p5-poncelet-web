@@ -10,7 +10,6 @@ var qVal;
 var wVal;
 var hVal;
 var tVal;
-
 var movableEllipse;
 
 // Initial iterate (for testing)
@@ -73,7 +72,7 @@ export function setup(audioData, sendData) {
   xInitial = cos(3*PI/6.0);
   yInitial = sin(3*PI/6.0);
 
-  nVal = 200;
+  nVal = 150;
 
   unitCircleOn = true;
   ellipseOn = true;
@@ -116,18 +115,7 @@ export function setup(audioData, sendData) {
 		innerEuclideanDurations,
 	})
 
-	movableEllipse.onStopDragging(({ pVal, qVal }) => {
-		sendData({
-			pVal,
-			qVal,
-			ponceletOrbit,
-			ponceletInnerOrbit,
-			angularDurations ,
-			euclideanDurations,
-			innerAngularDurations,
-			innerEuclideanDurations,
-		})
-	})
+	movableEllipse.onDrag(sendData)
 }
 
 export function draw(audioData) {
@@ -221,6 +209,8 @@ class MovableEllipse {
   }
 
   drag(mx, my) {
+		let [pX, pY] = this._prevMouseXY || [];
+		if(pX === mx && pY === my) return;
   	this.transformedMouseXY = transformCoordinatesEllipse(mx, my, this.pFixed, this.qFixed, this.tFixed);
   	if (ellipseInsideCircle(this.p, this.q, this.w, this.h)) { 	
 	  	if (this.dragging) {
@@ -235,6 +225,18 @@ class MovableEllipse {
 	    	innerAngularDurations = computeAngularDurations(ponceletInnerOrbit);
 			innerEuclideanDurations = computeEuclideanDurations(ponceletOrbit);			
 	    	squareIntersections = computeSquareIntersections(ponceletOrbit);
+				if(frameCount % 10 === 0) {
+					this._onDrag({
+						pVal,
+						qVal,
+						ponceletOrbit,
+						ponceletInnerOrbit,
+						angularDurations ,
+						euclideanDurations,
+						innerAngularDurations,
+						innerEuclideanDurations,
+					})
+				}
 		}
 	} else {
 	    this.alpha = atan2(this.qInside,this.pInside);
@@ -243,17 +245,16 @@ class MovableEllipse {
 		this.t = this.tFixed;
 		this.dragging = false;
 	}
-
+		this._prevMouseXY = [mx, my];
   }
 
   stopDragging() {
   	this.dragging = false;
-		this._onStopDragging({ qVal: this.q, pVal: this.p })
-  }   
+  }
 
-	onStopDragging(cb) {
-		this._onStopDragging = cb
- 	}
+	onDrag(cb) {
+		this._onDrag = cb
+	}
 
   getp() {
   	return this.p;
@@ -560,7 +561,7 @@ function drawBezierFlower3(orbit, innerOrbit) {
 	let cp0, cp1, cp2, cp3, cp4, cp5, cp6, cp7;
 	let tgntControlPointsOuterPre = [];
 	let tgntControlPointsOuterPost = [];
-	let tgntControlPointsInnerBack = [];
+	let tgntControlPointsInner = [];
 
 	if (innerOrbitLength>0) {
 		push();
@@ -598,7 +599,7 @@ function drawBezierFlower4(orbit, innerOrbit) {
 	let cp0, cp1, cp2, cp3, cp4, cp5, cp6, cp7;
 	let tgntControlPointsOuterPre = [];
 	let tgntControlPointsOuterPost = [];
-	let tgntControlPointsInnerBack = [];
+	let tgntControlPointsInner = [];
 
 	if (innerOrbitLength>0) {
 		push();
@@ -636,7 +637,7 @@ function drawBezierFlower5(orbit, innerOrbit) {
 	let cp0, cp1, cp2, cp3, cp4, cp5, cp6, cp7;
 	let tgntControlPointsOuterPre = [];
 	let tgntControlPointsOuterPost = [];
-	let tgntControlPointsInnerBack = [];
+	let tgntControlPointsInner = [];
 
 	if (innerOrbitLength>0) {
 		push();

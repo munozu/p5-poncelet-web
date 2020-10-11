@@ -10,11 +10,11 @@ export function setup() {
 }
 
 export function draw() {
-	poncelet.draw(audioData)
-	audio.draw(setAudioData)
-	if(frameCount % 100 === 0) {
-		// console.log(audioData)
-	}
+	poncelet.draw(audioData, setPonceletData)
+	audio.draw(ponceletData, setAudioData)
+	// if(frameCount % 100 === 0) {
+	// 	console.log(audioData)
+	// }
 }
 
 function setAudioData(new_data) {
@@ -22,7 +22,6 @@ function setAudioData(new_data) {
 }
 
 function setPonceletData(new_data) {
-	console.log(new_data)
 	ponceletData = new_data;
 }
 
